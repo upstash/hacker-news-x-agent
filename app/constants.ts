@@ -1,5 +1,7 @@
 export const TOP_SLICE = 100;
 
+export const MAX_CONTENT_LENGTH = 50000;
+
 export const SELECTORS_TO_REMOVE = [
   "script",
   "style",

@@ -8,7 +8,11 @@ import * as cheerio from "cheerio";
 import { z } from "zod";
 import { tool } from "ai";
 
-import { TOP_SLICE, SELECTORS_TO_REMOVE } from "@/app/constants";
+import {
+  TOP_SLICE,
+  SELECTORS_TO_REMOVE,
+  MAX_CONTENT_LENGTH,
+} from "@/app/constants";
 
 export const { POST } = serve<{ prompt: string }>(async (context) => {
   const model = context.agents.openai("gpt-4o-mini");
@@ -66,7 +70,8 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
             .text()
             .replace(/\s+/g, " ")
             .replace(/\n\s*/g, "\n")
-            .trim();
+            .trim()
+            .slice(0, MAX_CONTENT_LENGTH);
 
           return {
             title,
