@@ -4,7 +4,7 @@ This is a simple agent that fetches the top stories from Hacker News and tweets 
 
 To see the agent in action, follow [@hackernewsagent](https://x.com/hackernewsagent) on X.
 
-To learn more about how the agent works, check out our [blog post](https://upstash.com/blog/hackernewsagent).
+To learn more about how the agent works, check out our [blog post](https://upstash.com/blog/hacker-news-x-agent).
 
 ## Setup Instructions
 
