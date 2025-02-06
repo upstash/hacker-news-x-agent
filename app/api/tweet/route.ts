@@ -68,8 +68,6 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
             .replace(/\n\s*/g, "\n")
             .trim();
 
-          console.log({ title, url, content });
-
           return {
             title,
             url,
@@ -102,7 +100,8 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
       "You can fetch the top 1 unvisited Hacker News article and post it to Twitter " +
       "using the `hackerNewsTool` and `twitterTool` tools respectively. You will be " +
       "called every hour to fetch a new article and post it to Twitter. You must create " +
-      "a 250 character tweet summary of the article. Do not provide links in the tweet.",
+      "a 250 character tweet summary of the article. Provide links in the tweet if " +
+      "possible.",
   });
 
   const task = context.agents.task({
