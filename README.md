@@ -54,8 +54,15 @@ UPSTASH_REDIS_REST_TOKEN=
 OPENAI_API_KEY=
 ```
 
+7. Go to [ideogram](https://ideogram.ai/) and create a new API key. Fill the following environment variables in `.env.local`:
+
+```bash
+# To generate images
+IDEOGRAM_API_KEY=
+```
+
 <details>
-  <summary>7. Set up X API</summary>
+  <summary>8. Set up X API</summary>
 
 1. Go to [X Website](https://x.com/) and create an account.
 

@@ -1,4 +1,5 @@
 import { serve } from "@upstash/workflow/nextjs";
+import { WorkflowTool } from "@upstash/workflow";
 import { Redis } from "@upstash/redis";
 
 import { HackerNewsClient } from "@agentic/hacker-news";
@@ -13,6 +14,14 @@ import {
   SELECTORS_TO_REMOVE,
   MAX_CONTENT_LENGTH,
 } from "@/app/constants";
+
+type IdeogramResponse = {
+  created: string;
+  data: Array<{
+    prompt: string;
+    url: string;
+  }>;
+};
 
 export const { POST } = serve<{ prompt: string }>(async (context) => {
   const model = context.agents.openai("gpt-4o-mini");
@@ -80,24 +89,70 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
           };
         },
       }),
-      twitterTool: tool({
+      twitterTool: new WorkflowTool({
         description:
-          "A tool for posting a tweet. It takes an object as a parameter with a `tweet` " +
-          "field that contains the tweet to post which is a string. You absolutely should " +
-          "not give the string directly as a parameter.",
-        parameters: z.object({
+          "A tool for generating an image and posting a tweet to Twitter. It takes an " +
+          "object as a parameter with `tweet` and `imagePrompt` fields. The `tweet` field " +
+          "contains the tweet to post which is a string, and the `imagePrompt` field contains " +
+          "the prompt to generate an image for the tweet which is a string. You absolutely " +
+          "should not give the strings directly as parameters.",
+        schema: z.object({
           tweet: z.string().describe("The tweet to post."),
+          imagePrompt: z
+            .string()
+            .describe("The prompt to generate an image for the tweet."),
         }),
-        execute: async ({ tweet }: { tweet: string }) => {
-          const v2Client = new TwitterApi({
-            appKey: process.env.TWITTER_CONSUMER_KEY!,
-            appSecret: process.env.TWITTER_CONSUMER_SECRET!,
-            accessToken: process.env.TWITTER_ACCESS_TOKEN,
-            accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-          }).readWrite.v2;
-          await v2Client.tweet(tweet);
-          return tweet;
+        invoke: async ({
+          tweet,
+          imagePrompt,
+        }: {
+          tweet: string;
+          imagePrompt: string;
+        }) => {
+          const { body: ideogramResult } = (await context.call(
+            "call image generation API",
+            {
+              url: "https://api.ideogram.ai/generate",
+              method: "POST",
+              body: {
+                image_request: {
+                  model: "V_2",
+                  prompt: imagePrompt,
+                  aspect_ratio: "ASPECT_16_9",
+                  magic_prompt_option: "AUTO",
+                },
+              },
+              headers: {
+                "Content-Type": "application/json",
+                "Api-Key": process.env.IDEOGRAM_API_KEY!,
+              },
+            }
+          )) as { body: IdeogramResponse };
+
+          const twitterResult = context.run(
+            "post image to Twitter",
+            async () => {
+              const client = new TwitterApi({
+                appKey: process.env.TWITTER_CONSUMER_KEY!,
+                appSecret: process.env.TWITTER_CONSUMER_SECRET!,
+                accessToken: process.env.TWITTER_ACCESS_TOKEN,
+                accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+              }).readWrite;
+              const blob = await fetch(ideogramResult.data[0].url).then((res) =>
+                res.blob()
+              );
+              const arrayBuffer = await blob.arrayBuffer();
+              const buffer = Buffer.from(arrayBuffer);
+              const mediaId = await client.v1.uploadMedia(buffer, {
+                mimeType: "image/jpeg",
+              });
+              await client.v2.tweet(tweet, { media: { media_ids: [mediaId] } });
+              return tweet;
+            }
+          );
+          return twitterResult;
         },
+        executeAsStep: false,
       }),
     },
     background:
@@ -106,13 +161,18 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
       "using the `hackerNewsTool` and `twitterTool` tools respectively. You will be " +
       "called every hour to fetch a new article and post it to Twitter. You must create " +
       "a 250 character tweet summary of the article. Provide links in the tweet if " +
-      "possible.",
+      "possible. Make sure to generate an image related to the tweet and post it along " +
+      "with the tweet.",
   });
 
   const task = context.agents.task({
     agent: hackerNewsTwitterAgent,
     prompt:
-      "Fetch the top 1 unvisited Hacker News article and post it to Twitter.",
+      "Fetch the top 1 unvisited Hacker News article and post it to Twitter. Generated image will be posted " +
+      "to Twitter with the tweet so it should be related to the tweet. Do not generate " +
+      "tweets with complicated unicode characters as they lead to encoding issues. However, " +
+      "do not change the urls in the tweet. Do not post inappropriate content in tweet or " +
+      "image.",
   });
 
   await task.run();
