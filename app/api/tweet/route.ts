@@ -120,6 +120,14 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
                   prompt: imagePrompt,
                   aspect_ratio: "ASPECT_16_9",
                   magic_prompt_option: "AUTO",
+                  color_palette: {
+                    members: [
+                      { color_hex: "#FF6D00" },
+                      { color_hex: "#FFCA12" },
+                      { color_hex: "#58BAE7" },
+                      { color_hex: "#DDDDDD" },
+                    ],
+                  },
                 },
               },
               headers: {
@@ -172,7 +180,10 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
       "to Twitter with the tweet so it should be related to the tweet. Do not generate " +
       "tweets with complicated unicode characters as they lead to encoding issues. However, " +
       "do not change the urls in the tweet. Do not post inappropriate content in tweet or " +
-      "image.",
+      "image. Also add this to the imagePrompt: If there are arrows and lines they are black " +
+      "and slightly thick. The applications are represented by their logos. In the tweet, make " +
+      "sure to put the url of the article two lines below the tweet, with Check it out here or " +
+      "similar expression before it. Do not call a tool twice in parallel.",
   });
 
   await task.run();
