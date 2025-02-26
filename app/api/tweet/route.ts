@@ -181,9 +181,9 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
       "tweets with complicated unicode characters as they lead to encoding issues. However, " +
       "do not change the urls in the tweet. Do not post inappropriate content in tweet or " +
       "image. Also add this to the imagePrompt: If there are arrows and lines they are black " +
-      "and slightly thick. The applications are represented by their logos. In the tweet, make " +
-      "sure to put the url of the article two lines below the tweet, with Check it out here or " +
-      "similar expression before it. Do not call a tool twice in parallel.",
+      "and slightly thick. In the tweet, make sure to put the url of the article two lines " +
+      "below the tweet, with Check it out here or similar expression before it. Do not call a " +
+      "tool twice in parallel.",
   });
 
   await task.run();
