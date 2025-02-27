@@ -181,7 +181,8 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
       "to Twitter with the tweet so it should be related to the tweet. Sometimes the articles are " +
       "written in first person, so make sure to change the first person to third person point of view in tweet. " +
       "Do not change the urls in the tweet. Do not post inappropriate content in tweet or " +
-      "image. Generate a visually appealing illustration related to the article. The image " +
+      "image. Make sure the tweet is short and concise, has no more than 250 characters. Generate " +
+      "a visually appealing illustration related to the article. The image " +
       "should be clean, simple, and engaging—ideal for social media scrolling. Use an isometric " +
       "or minimal flat design style with smooth gradients and soft shadows. Avoid clutter, excessive " +
       "details, or small text. If the image includes arrows or lines, make them slightly thick and " +
