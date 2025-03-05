@@ -109,7 +109,7 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
           tweet: string;
           imagePrompt: string;
         }) => {
-          const { body: ideogramResult } = (await context.call(
+          const { body: ideogramResult } = await context.call<IdeogramResponse>(
             "call image generation API",
             {
               url: "https://api.ideogram.ai/generate",
@@ -136,7 +136,7 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
                 "Api-Key": process.env.IDEOGRAM_API_KEY!,
               },
             }
-          )) as { body: IdeogramResponse };
+          );
 
           const twitterResult = context.run(
             "post image to Twitter",
