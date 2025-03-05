@@ -120,6 +120,15 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
                   prompt: imagePrompt,
                   aspect_ratio: "ASPECT_16_9",
                   magic_prompt_option: "AUTO",
+                  style_type: "DESIGN",
+                  color_palette: {
+                    members: [
+                      { color_hex: "#FF6D00" },
+                      { color_hex: "#FFCA12" },
+                      { color_hex: "#58BAE7" },
+                      { color_hex: "#DDDDDD" },
+                    ],
+                  },
                 },
               },
               headers: {
@@ -169,10 +178,18 @@ export const { POST } = serve<{ prompt: string }>(async (context) => {
     agent: hackerNewsTwitterAgent,
     prompt:
       "Fetch the top 1 unvisited Hacker News article and post it to Twitter. Generated image will be posted " +
-      "to Twitter with the tweet so it should be related to the tweet. Do not generate " +
-      "tweets with complicated unicode characters as they lead to encoding issues. However, " +
-      "do not change the urls in the tweet. Do not post inappropriate content in tweet or " +
-      "image.",
+      "to Twitter with the tweet so it should be related to the tweet. Sometimes the articles are " +
+      "written in first person, so make sure to change the first person to third person point of view in tweet. " +
+      "Do not change the urls in the tweet. Do not post inappropriate content in tweet or " +
+      "image. Make sure the tweet is short and concise, has no more than 250 characters. Generate " +
+      "a visually appealing illustration related to the article. The image " +
+      "should be clean, simple, and engaging—ideal for social media scrolling. Use an isometric " +
+      "or minimal flat design style with smooth gradients and soft shadows. Avoid clutter, excessive " +
+      "details, or small text. If the image includes arrows or lines, make them slightly thick and " +
+      "black for clarity. Do not include logos or branding. The illustration should convey the article’s " +
+      "theme in a creative and inviting way. Try to give a concrete description of the image. In the " +
+      "tweet, make sure to put the url of the article two lines below the tweet, with Check it out " +
+      "here or similar expression before it. Do not call a tool twice in parallel.",
   });
 
   await task.run();
