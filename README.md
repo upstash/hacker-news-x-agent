@@ -8,10 +8,6 @@ To learn more about how the agent works, check out our [blog post](https://upsta
 
 ## Setup Instructions
 
-### Using the Vercel Deploy Button
-
-You can deploy this agent to Vercel with a single click using the Vercel Deploy Button found found at the top of this file. Fill the environment variables as described in the next steps.
-
 ### Fill Environment Variables
 
 1. Clone this repository.
