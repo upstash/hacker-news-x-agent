@@ -13,6 +13,7 @@ import {
   TOP_SLICE,
   SELECTORS_TO_REMOVE,
   MAX_CONTENT_LENGTH,
+  TWEET_DEDUPLICATOR_TIMEOUT,
 } from "@/app/constants";
 
 type IdeogramResponse = {
@@ -110,6 +111,22 @@ export const { POST } = serve<{ prompt: string }>(
             tweet: string;
             imagePrompt: string;
           }) => {
+            const acquired = await context.run(
+              "deduplicate tweets",
+              async () => {
+                const redis = Redis.fromEnv();
+                const acquired = await redis.set("tweet:deduplicator", "true", {
+                  nx: true,
+                  ex: TWEET_DEDUPLICATOR_TIMEOUT,
+                });
+                return acquired === "OK";
+              }
+            );
+
+            if (!acquired) {
+              return "deduplicated";
+            }
+
             const { body: ideogramResult } =
               await context.call<IdeogramResponse>(
                 "call image generation API",
@@ -193,7 +210,8 @@ export const { POST } = serve<{ prompt: string }>(
         "black for clarity. Do not include logos or branding. The illustration should convey the article’s " +
         "theme in a creative and inviting way. Try to give a concrete description of the image. In the " +
         "tweet, make sure to put the url of the article two lines below the tweet, with Check it out " +
-        "here or similar expression before it. Do not call a tool twice in parallel.",
+        "here or similar expression before it. Do not call a tool twice. Only generate one image, only post one tweet." +
+        "Do not generate multiple images or post multiple tweets.",
     });
 
     await task.run();

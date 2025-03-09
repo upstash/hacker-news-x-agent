@@ -23,3 +23,5 @@ export const SELECTORS_TO_REMOVE = [
   ".comments",
   "#comments",
 ];
+
+export const TWEET_DEDUPLICATOR_TIMEOUT = 100;
