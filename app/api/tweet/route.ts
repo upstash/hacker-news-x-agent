@@ -115,10 +115,14 @@ export const { POST } = serve<{ prompt: string }>(
               "deduplicate tweets",
               async () => {
                 const redis = Redis.fromEnv();
-                const acquired = await redis.set("tweet:deduplicator", "true", {
-                  nx: true,
-                  ex: TWEET_DEDUPLICATOR_TIMEOUT,
-                });
+                const acquired = await redis.set(
+                  `${context.workflowRunId}:tweet:deduplicator`,
+                  "true",
+                  {
+                    nx: true,
+                    ex: TWEET_DEDUPLICATOR_TIMEOUT,
+                  }
+                );
                 return acquired === "OK";
               }
             );
