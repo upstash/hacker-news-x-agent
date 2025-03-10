@@ -14,6 +14,8 @@ import {
   SELECTORS_TO_REMOVE,
   MAX_CONTENT_LENGTH,
   TWEET_DEDUPLICATOR_TIMEOUT,
+  MIN_SLEEP_TIME,
+  MAX_SLEEP_TIME,
 } from "@/app/constants";
 
 type IdeogramResponse = {
@@ -217,6 +219,14 @@ export const { POST } = serve<{ prompt: string }>(
         "here or similar expression before it. Do not call a tool twice. Only generate one image, only post one tweet." +
         "Do not generate multiple images or post multiple tweets.",
     });
+
+    const sleepTime = await context.run("randomize sleep time", async () => {
+      return Math.floor(
+        Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME) + MIN_SLEEP_TIME
+      );
+    });
+
+    await context.sleep("sleep", sleepTime);
 
     await task.run();
   },
