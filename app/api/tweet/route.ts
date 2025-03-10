@@ -217,7 +217,7 @@ export const { POST } = serve<{ prompt: string }>(
         "theme in a creative and inviting way. Try to give a concrete description of the image. In the " +
         "tweet, make sure to put the url of the article two lines below the tweet, with Check it out " +
         "here or similar expression before it. Do not call a tool twice. Only generate one image, only post one tweet." +
-        "Do not generate multiple images or post multiple tweets.",
+        "Do not generate multiple images or post multiple tweets. Always include the url of the article in the tweet.",
     });
 
     const sleepTime = await context.run("randomize sleep time", async () => {
