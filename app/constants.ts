@@ -25,3 +25,6 @@ export const SELECTORS_TO_REMOVE = [
 ];
 
 export const TWEET_DEDUPLICATOR_TIMEOUT = 100;
+
+export const MIN_SLEEP_TIME = 3;
+export const MAX_SLEEP_TIME = 9000;
