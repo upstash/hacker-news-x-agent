@@ -94,6 +94,7 @@ IDEOGRAM_API_KEY=
 
 ```bash
 # To be able to tweet
+X_POST_BACKEND=twitter
 TWITTER_CONSUMER_KEY=
 TWITTER_CONSUMER_SECRET=
 TWITTER_ACCESS_TOKEN=
@@ -103,6 +104,16 @@ TWITTER_ACCESS_TOKEN_SECRET=
 ![9-keys-and-tokens](https://github.com/user-attachments/assets/7af449da-a41c-4991-975d-9cf562859000)
 
 </details>
+
+You can also post through Xquik by setting `X_POST_BACKEND=xquik`.
+The direct X API setup remains the default.
+
+```bash
+# Optional Xquik posting backend
+XQUIK_API_KEY=
+XQUIK_ACCOUNT=
+XQUIK_API_URL=https://xquik.com/api/v1/x/tweets
+```
 
 ### Deploy the Agent
 

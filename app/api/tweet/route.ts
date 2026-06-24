@@ -26,6 +26,69 @@ type IdeogramResponse = {
   }>;
 };
 
+const XQUIK_TWEET_URL = "https://xquik.com/api/v1/x/tweets";
+
+function postBackend() {
+  return process.env.X_POST_BACKEND === "xquik" ? "xquik" : "twitter";
+}
+
+async function postTweetWithTwitter(tweet: string, imageUrl: string) {
+  const client = new TwitterApi({
+    appKey: process.env.TWITTER_CONSUMER_KEY!,
+    appSecret: process.env.TWITTER_CONSUMER_SECRET!,
+    accessToken: process.env.TWITTER_ACCESS_TOKEN,
+    accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  }).readWrite;
+  const blob = await fetch(imageUrl).then((res) => res.blob());
+  const arrayBuffer = await blob.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const mediaId = await client.v1.uploadMedia(buffer, {
+    mimeType: "image/jpeg",
+  });
+  await client.v2.tweet(tweet, {
+    media: { media_ids: [mediaId] },
+  });
+  return tweet;
+}
+
+async function postTweetWithXquik(tweet: string, imageUrl: string) {
+  const apiKey = process.env.XQUIK_API_KEY;
+  const account = process.env.XQUIK_ACCOUNT;
+
+  if (!apiKey || !account) {
+    throw new Error(
+      "XQUIK_API_KEY and XQUIK_ACCOUNT are required when X_POST_BACKEND=xquik."
+    );
+  }
+
+  const response = await fetch(process.env.XQUIK_API_URL ?? XQUIK_TWEET_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+    },
+    body: JSON.stringify({
+      account,
+      text: tweet,
+      media: [imageUrl],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Xquik post failed with status ${response.status}.`);
+  }
+
+  return tweet;
+}
+
+async function postTweet(tweet: string, imageUrl: string) {
+  if (postBackend() === "xquik") {
+    return postTweetWithXquik(tweet, imageUrl);
+  }
+
+  return postTweetWithTwitter(tweet, imageUrl);
+}
+
 export const { POST } = serve<{ prompt: string }>(
   async (context) => {
     const model = context.agents.openai("gpt-4o-mini");
@@ -166,24 +229,7 @@ export const { POST } = serve<{ prompt: string }>(
             const twitterResult = context.run(
               "post image to Twitter",
               async () => {
-                const client = new TwitterApi({
-                  appKey: process.env.TWITTER_CONSUMER_KEY!,
-                  appSecret: process.env.TWITTER_CONSUMER_SECRET!,
-                  accessToken: process.env.TWITTER_ACCESS_TOKEN,
-                  accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-                }).readWrite;
-                const blob = await fetch(ideogramResult.data[0].url).then(
-                  (res) => res.blob()
-                );
-                const arrayBuffer = await blob.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                const mediaId = await client.v1.uploadMedia(buffer, {
-                  mimeType: "image/jpeg",
-                });
-                await client.v2.tweet(tweet, {
-                  media: { media_ids: [mediaId] },
-                });
-                return tweet;
+                return postTweet(tweet, ideogramResult.data[0].url);
               }
             );
             return twitterResult;
@@ -210,7 +256,7 @@ export const { POST } = serve<{ prompt: string }>(
         "Do not change the urls in the tweet. Do not post inappropriate content in tweet or " +
         "image. Make sure the tweet is short and concise, has no more than 250 characters. Generate " +
         "a visually appealing illustration related to the article. The image " +
-        "should be clean, simple, and engaging—ideal for social media scrolling. Use an isometric " +
+        "should be clean, simple, and engaging - ideal for social media scrolling. Use an isometric " +
         "or minimal flat design style with smooth gradients and soft shadows. Avoid clutter, excessive " +
         "details, or small text. If the image includes arrows or lines, make them slightly thick and " +
         "black for clarity. Do not include logos or branding. The illustration should convey the article’s " +
